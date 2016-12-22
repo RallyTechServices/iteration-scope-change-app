@@ -3,13 +3,13 @@
 <head>
     <title>Iteration Scope Change</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Wed Dec 14 2016 22:03:20 GMT-0800 (PST) -->
+    <!--  Build Date: Wed Dec 21 2016 10:57:28 GMT-0800 (PST) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Wed Dec 14 2016 22:03:20 GMT-0800 (PST)";
+        var APP_BUILD_DATE = "Wed Dec 21 2016 10:57:28 GMT-0800 (PST)";
         var STORY    = "US915";
         var BUILDER  = "arajaraman";
-        var CHECKSUM = 464767087244;
+        var CHECKSUM = 436099315236;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -604,7 +604,7 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
             zoomType: 'xy'
         },
         title: {
-            text: 'Program Increment Scope Change Chart'
+            text: 'Iteration Scope Change Chart'
         },
         // subtitle: {
         //     text: ''
@@ -837,9 +837,7 @@ extend: 'Rally.app.TimeboxScopedApp',
     },
     devMode : false,
     fetch : ['FormattedID','ObjectID', '_ValidTo', '_ValidFrom', 'PlanEstimate',
-        'AcceptedLeafStoryCount', 'AcceptedLeafStoryPlanEstimateTotal', 
-        'LeafStoryCount', 'LeafStoryPlanEstimateTotal','PercentDoneByStoryCount',
-        'PercentDoneByStoryPlanEstimate','Predecessors','Name','ActualEndDate','ActualStartDate'],
+        'Name','ActualEndDate','ActualStartDate','ScheduleState','Owner'],
 
     seriesKeys : ['BaselineScope','BaselineScopeInProgress','BaselineScopeCompleted','AddedScope','AddedScopeInProgress','AddedScopeCompleted'],
 
@@ -847,13 +845,6 @@ extend: 'Rally.app.TimeboxScopedApp',
         return typeof(this.getAppId()) == 'undefined';
     },
 
-    // launch: function() {
-    //  this.callParent(arguments);
-    //  app = this;
-    //  app.onScopeChange();
-    // },
-
-    // _loadAStoreWithAPromise: function( model_name, model_fields, filters,ctx,order) {
     containsKey : function(bundle,key) {
         return (_.findIndex(_.keys(bundle),key) !== -1 )
     },
@@ -867,10 +858,6 @@ extend: 'Rally.app.TimeboxScopedApp',
                         Name: "Release 2",
                         ReleaseDate: "2016-08-01T06:59:59.000Z",
                         ReleaseStartDate: "2016-05-01T06:00:00.000Z"
-                        // Name: "AC7",
-                        // ReleaseDate: "2016-01-05T06:59:59.000Z",
-                        // ReleaseStartDate: "2015-10-15T06:00:00.000Z"
-
                         }
                 }
             );
@@ -956,8 +943,6 @@ extend: 'Rally.app.TimeboxScopedApp',
                 "Iteration", 
                 ["Name","StartDate","EndDate"], 
                 [
-                    // { property : "StartDate", operator : ">=", value : release.StartDate },
-                    // { property : "EndDate", operator : "<=", value : release.EndDate }
                     { property : "EndDate", operator : "<=", value : release.EndDate },
                     { property : "EndDate", operator : ">", value : release.StartDate }                    
                 ], {
@@ -1002,11 +987,6 @@ extend: 'Rally.app.TimeboxScopedApp',
             deferred.resolve(bundle);
         } else {
             var filter = Ext.create('TSStringFilter',{query_string: queryText });
-            // var releaseFilter = Ext.create('Rally.data.wsapi.Filter', {
-            //      property: 'ReleseName',
-            //      operator: '=',
-            //      value: 'My Story'
-            // });
 
             Ext.create('Rally.data.WsapiDataStore',{
             model: 'HierarchicalRequirement',//_.first(bundle.piTypes).get("TypePath"),
@@ -1053,7 +1033,6 @@ extend: 'Rally.app.TimeboxScopedApp',
         } else {
             find = {
                 "Iteration" : { "$in" : _.map(releases,function(r){return r.get("ObjectID");})},
-                //"_TypeHierarchy" : { "$in" : [_.first(bundle.piTypes).get("TypePath")] },
                 "_TypeHierarchy" : { "$in" : ['HierarchicalRequirement'] }                
             }
         }
@@ -1074,11 +1053,8 @@ extend: 'Rally.app.TimeboxScopedApp',
                 }
             },
             fetch: app.fetch,
-            find : find
-            // find: {
-            //  "Release" : { "$in" : _.map(releases,function(r){return r.get("ObjectID");})},
-            //  "_TypeHierarchy" : { "$in" : [_.first(bundle.piTypes).get("TypePath")] },
-            // }
+            hydrate: ["Project","Owner","ScheduleState"],      
+            find : find,
         });
         return deferred.getPromise();
     },
@@ -1160,18 +1136,11 @@ extend: 'Rally.app.TimeboxScopedApp',
 
             var progressFunction = function(feature) {
 
-                if ((feature.ActualEndDate != null) && (feature.ActualEndDate != "")) 
+                if ((feature.ScheduleState == "Completed") || (feature.ScheduleState == "Accepted")) 
                     return "ScopeCompleted";
-                if ((feature.ActualStartDate != null) && (feature.ActualStartDate != "")) 
+                if (feature.ScheduleState == "In-Progress") 
                     return "ScopeInProgress";
                 return "Scope";
-     
-                // if (feature.PercentDoneByStoryCount === 0)
-                //  return 'Scope';
-                // if ( (feature.PercentDoneByStoryCount >= 0) && (feature.PercentDoneByStoryCount < 1) )
-                //  return 'ScopeInProgress';
-                // if (feature.PercentDoneByStoryCount === 1)
-                //  return 'ScopeCompleted';
             };
 
             return scopeFunction(feature) + progressFunction(feature);
@@ -1261,18 +1230,6 @@ extend: 'Rally.app.TimeboxScopedApp',
         deferred.resolve(bundle);
         return deferred.promise;
     },
-
-    // seqence
-    // _getRelease
-    // _loadPortfolioItemTypes
-    // _loadPreliminaryEstimateValues
-    // _loadReleses
-    // _loadIterations
-    // _queryFeatures
-    // readData
-    // getSnapshots
-    // process
-    // createChart
 
     onScopeChange : function( scope ) {
         // grab just the release data
@@ -1379,7 +1336,7 @@ extend: 'Rally.app.TimeboxScopedApp',
 
     },
 
-    addScopeChangeTable : function( features ) {
+    addScopeChangeTable : function( features, day ) {
 
         var that = this;
 
@@ -1388,7 +1345,10 @@ extend: 'Rally.app.TimeboxScopedApp',
             fields: [
                 {name: 'Scope'},
                 {name: 'FormattedID' },
+                {name: 'Project' },
                 {name: 'Name' },
+                {name: 'ScheduleState' },
+                //{name: 'Owner' },
                 {name: 'PlanEstimate' }
             ]
         });
@@ -1397,20 +1357,32 @@ extend: 'Rally.app.TimeboxScopedApp',
         var grid = new Ext.grid.GridPanel({
             store: store,
             columns: [
-                { header: "Scope", sortable: true, dataIndex: 'Scope'},
-                { header: "ID", sortable: true, dataIndex: 'FormattedID'},
-                { header: "Name", sortable: true, dataIndex: 'Name',width:250},
-                { header: "Size", sortable: true, dataIndex: 'PlanEstimate' ,
-                    renderer : function(value, p, record){
-                        var estimate = _.find(app.bundle.prelimEstimateValues,function(v) {
-                            return value === v.get("ObjectID");
-                        });
-                        return estimate ? estimate.get("Name") + " (" + estimate.get("Value") + ")" : "(None)";
-                    }
+                { header: "Scope", sortable: true, dataIndex: 'Scope', flex:1},
+                { header: "ID", sortable: true, dataIndex: 'FormattedID', flex:1},
+                { header: "Project", sortable: true, dataIndex: 'Project', flex:1,
+                  renderer: function(Project) {
+                      return Project.Name;
+                  }
+                },
+                { header: "Name", sortable: true, dataIndex: 'Name', width:250, flex:1},
+                { header: "ScheduleState", sortable: true, dataIndex: 'ScheduleState', flex:1},
+                // { header: "Owner", sortable: true, dataIndex: 'Owner', flex:1,
+                //     renderer: function(Owner) {
+                //         return Owner.FirstName;
+                //     }
+                // },
+                { header: "Size", sortable: true, dataIndex: 'PlanEstimate', flex:1 
+                    //,
+                    // renderer : function(value, p, record){
+                    //     var estimate = _.find(app.bundle.prelimEstimateValues,function(v) {
+                    //         return value === v.get("ObjectID");
+                    //     });
+                    //     return estimate ? estimate.get("Name") + " (" + estimate.get("Value") + ")" : "(None)";
+                    // }
                 }
             ],
             stripeRows: true,
-            title:'Scope Change Since Baseline',
+            title:'Scope Change Since Baseline for Day: ' + day,
         });
 
         // that.add(grid);
@@ -1475,7 +1447,7 @@ extend: 'Rally.app.TimeboxScopedApp',
         var that = this;
 
         var scopeChangeFeatures = that.getScopeChangeFeatures(event.series.chart,event.x);
-        that.scopeGrid = that.addScopeChangeTable(scopeChangeFeatures);
+        that.scopeGrid = that.addScopeChangeTable(scopeChangeFeatures,event.x);
 
         if (!_.isUndefined(that.tabPanel)) {
             that.remove(that.tabPanel);
@@ -1510,13 +1482,7 @@ extend: 'Rally.app.TimeboxScopedApp',
                     shouldShowRowActionsColumn: false,
                     enableRanking: false,
                     columnCfgs: [
-                        'Project','Name',   'Iteration', 
-                        { dataIndex : 'PreliminaryEstimate', text : 'Preliminary Size'},
-                        { dataIndex : 'LeafStoryPlanEstimateTotal', text: 'Leaf Story Points'},
-                        { dataIndex : 'LeafStoryCount', text : 'Leaf Story Count'},
-                        { dataIndex : 'PercentDoneByStoryCount', text : '% Done by Count'},
-                        { dataIndex : 'PercentDoneByStoryPlanEstimate', text : '% Done by Story Points'},
-                        'ActualStartDate', 'ActualEndDate', 'ScheduleState', 'Owner', 'Milestones'
+                        'Project','Name','ScheduleState', 'Owner', 'PlanEstimate'
                     ]
                 });
 
@@ -1597,7 +1563,7 @@ extend: 'Rally.app.TimeboxScopedApp',
 
         var baselineTypeStore = new Ext.data.ArrayStore({
             fields: ['baselineType'],
-            data : [[0],[1],[2],[3],[4] /*,['Day Index'],['Specific Date']*/ ]
+            data : [["0"],["1"],["2"],["3"],["4"] /*,['Day Index'],['Specific Date']*/ ]
         });  
 
         return [ 
@@ -1664,91 +1630,6 @@ extend: 'Rally.app.TimeboxScopedApp',
         app.getEl().unmask();
     },
 
-    // extend: 'Rally.app.App',
-    // componentCls: 'app',
-    // logger: new Rally.technicalservices.Logger(),
-    // defaults: { margin: 10 },
-    // items: [
-    //     {xtype:'container',itemId:'message_box',tpl:'Hello, <tpl>{_refObjectName}</tpl>'},
-    //     {xtype:'container',itemId:'display_box'}
-    // ],
-
-    // integrationHeaders : {
-    //     name : "TSApp"
-    // },
-                        
-    // launch: function() {
-    //     var me = this;
-    //     this.setLoading("Loading stuff...");
-
-    //     this.down('#message_box').update(this.getContext().getUser());
-        
-    //     var model_name = 'Defect',
-    //         field_names = ['Name','State'];
-        
-    //     this._loadAStoreWithAPromise(model_name, field_names).then({
-    //         scope: this,
-    //         success: function(store) {
-    //             this._displayGrid(store,field_names);
-    //         },
-    //         failure: function(error_message){
-    //             alert(error_message);
-    //         }
-    //     }).always(function() {
-    //         me.setLoading(false);
-    //     });
-    // },
-      
-    // _loadWsapiRecords: function(config){
-    //     var deferred = Ext.create('Deft.Deferred');
-    //     var me = this;
-    //     var default_config = {
-    //         model: 'Defect',
-    //         fetch: ['ObjectID']
-    //     };
-    //     this.logger.log("Starting load:",config.model);
-    //     Ext.create('Rally.data.wsapi.Store', Ext.Object.merge(default_config,config)).load({
-    //         callback : function(records, operation, successful) {
-    //             if (successful){
-    //                 deferred.resolve(records);
-    //             } else {
-    //                 me.logger.log("Failed: ", operation);
-    //                 deferred.reject('Problem loading: ' + operation.error.errors.join('. '));
-    //             }
-    //         }
-    //     });
-    //     return deferred.promise;
-    // },
-
-    // _loadAStoreWithAPromise: function(model_name, model_fields){
-    //     var deferred = Ext.create('Deft.Deferred');
-    //     var me = this;
-    //     this.logger.log("Starting load:",model_name,model_fields);
-          
-    //     Ext.create('Rally.data.wsapi.Store', {
-    //         model: model_name,
-    //         fetch: model_fields
-    //     }).load({
-    //         callback : function(records, operation, successful) {
-    //             if (successful){
-    //                 deferred.resolve(this);
-    //             } else {
-    //                 me.logger.log("Failed: ", operation);
-    //                 deferred.reject('Problem loading: ' + operation.error.errors.join('. '));
-    //             }
-    //         }
-    //     });
-    //     return deferred.promise;
-    // },
-    
-    // _displayGrid: function(store,field_names){
-    //     this.down('#display_box').add({
-    //         xtype: 'rallygrid',
-    //         store: store,
-    //         columnCfgs: field_names
-    //     });
-    // },
-    
     getOptions: function() {
         return [
             {

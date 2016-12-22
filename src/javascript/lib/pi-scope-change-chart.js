@@ -19,7 +19,7 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
             zoomType: 'xy'
         },
         title: {
-            text: 'Program Increment Scope Change Chart'
+            text: 'Iteration Scope Change Chart'
         },
         // subtitle: {
         //     text: ''
