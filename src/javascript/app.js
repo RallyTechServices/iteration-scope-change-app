@@ -31,20 +31,10 @@ extend: 'Rally.app.TimeboxScopedApp',
     _getRelease : function() {
         console.log("_getRelease");
         var deferred = Ext.create('Deft.Deferred');
-        if (app.devMode===true) {
-            deferred.resolve({
-                release :  {
-                        Name: "Release 2",
-                        ReleaseDate: "2016-08-01T06:59:59.000Z",
-                        ReleaseStartDate: "2016-05-01T06:00:00.000Z"
-                        }
-                }
-            );
-        } else {
-            deferred.resolve({
-                release : app.release
-            });
-        }
+
+        deferred.resolve({
+            release : app.release
+        });
         return deferred.promise;
     },
 
@@ -155,8 +145,8 @@ extend: 'Rally.app.TimeboxScopedApp',
 
     },
 
-    _queryFeatures : function(bundle) {
-        console.log("_queryFeatures");
+    _queryStories : function(bundle) {
+        console.log("_queryStories");
         
         var deferred = new Deft.Deferred();
         var queryText = app.getSetting("queryText");
@@ -180,7 +170,7 @@ extend: 'Rally.app.TimeboxScopedApp',
                 load: function(store,items,successful,opts) {
                     console.log("wsapi load",successful,opts);
                     if ( successful ) {
-                        console.log("query features",_.map(items,function(i){return i.get("FormattedID")}));
+                        console.log("query stories",_.map(items,function(i){return i.get("FormattedID")}));
                         bundle.queryFeatureOids = _.map(items,function(i){return i.get("ObjectID")});
                         deferred.resolve(bundle);
                     } else {
@@ -252,7 +242,7 @@ extend: 'Rally.app.TimeboxScopedApp',
         // console.log(bundle.release,_.last(dr));
         // iterate each day of the release
         // data is an array of objects; each object is keyed by the category and the key value is the 
-        // set of applicable features
+        // set of applicable stories
         bundle.data = _.map(dr,function( day, index ) {
             // filter to just the snapshots for that day
             var daySnapshots = _.filter(bundle.snapshots,function(s){
@@ -286,7 +276,7 @@ extend: 'Rally.app.TimeboxScopedApp',
 
         // get the index of the baseline date
         bundle.baselineIndex = app.getBaselineIndex(dr,bundle.iterations);
-        // initiatlize the baseline (the set of features that exist on the baseline)
+        // initiatlize the baseline (the set of stories that exist on the baseline)
         bundle.baseline = _.clone(bundle.data[bundle.baselineIndex]);
         // get the set of indexes into release array that represent end dates of iterations
         bundle.iterationIndices = app.dateIndexes( dr, _.map(bundle.iterations,function(i){ return moment(i.raw.EndDate);}));
@@ -298,9 +288,9 @@ extend: 'Rally.app.TimeboxScopedApp',
     _categorize : function(bundle) {
 
         var categorize = function( feature, dayIndex ) {
-            // this function categorizes a feature snapshot into one of the following categories
+            // this function categorizes a story snapshot into one of the following categories
             // Scope, ScopeInProgress, ScopeCompleted
-            // see if feature is in baseline
+            // see if story is in baseline
             var scopeFunction = function(feature) {
                 var bIndex = _.findIndex(bundle.baseline,function(f){
                     return f.ObjectID === feature.ObjectID;
@@ -350,7 +340,7 @@ extend: 'Rally.app.TimeboxScopedApp',
                 name : key,
                 data : _.map( bundle.data, function(d,x){ 
 
-                    // if no features for category return a null value
+                    // if no stories for category return a null value
                     if (_.isUndefined(d[key]))  {
                         return { 
                             x : x, y : null, features : null
@@ -416,6 +406,7 @@ extend: 'Rally.app.TimeboxScopedApp',
         console.log("onScopeChange");
         this.release = !_.isUndefined(scope) ? scope.getRecord().raw : null;
         this.clear();
+        app.activeTab = null;
         app.bundle = {};
 
         Deft.Chain.pipeline([
@@ -424,7 +415,7 @@ extend: 'Rally.app.TimeboxScopedApp',
             this._loadPortfolioItemTypes,
             this._loadReleases,
             this._loadIterations,
-            this._queryFeatures,
+            this._queryStories,
             this._getSnapshots,
             this._process,
             this._setBaseline,
@@ -479,16 +470,16 @@ extend: 'Rally.app.TimeboxScopedApp',
         return app.getSetting("baselineType");
     },
 
-    // returns an array of features that have been added or removed since the baseline
+    // returns an array of stories that have been added or removed since the baseline
     getScopeChangeFeatures : function(chart,x) {
 
         var that = this;
 
-        // aggregate the features for all series for the selected data
+        // aggregate the stories for all series for the selected data
         var currentFeatures = _.compact(_.flatten(_.map(chart.series,function(s) { return s.data[x].features })));
         var previousFeatures = app.bundle.baseline;
 
-        // get feature ids for comparison
+        // get story ids for comparison
         var cFeatures = _.map( currentFeatures, function(f) { return f.FormattedID; });
         var pFeatures = _.map( previousFeatures, function(f) { return f.FormattedID; });
 
@@ -568,24 +559,24 @@ extend: 'Rally.app.TimeboxScopedApp',
         return grid;
     },
 
-    // returns a function to aggregate the features based on the app configuration
+    // returns a function to aggregate the stories based on the app configuration
     getReducerFunction : function() {
 
         var that = this;
         var reducerFn = null;
 
-        // simple count of features
+        // simple count of stories
         var countReducer = function(features) {
             return features.length;
         };
 
-        // sum of story points for the features
+        // sum of story points for the stories
         var pointsReducer = function(features) {
             return _.reduce(features,function(memo,feature) { 
                 return memo + feature.PlanEstimate; }, 0 );
         };
 
-        // sum of preliminary estimate values for the features
+        // sum of preliminary estimate values for the stories
         var estimateReducer = function(features) {
             return _.reduce(features,function(memo,feature) { 
                 var estimate = _.find(app.bundle.prelimEstimateValues,function(v) {
@@ -605,7 +596,7 @@ extend: 'Rally.app.TimeboxScopedApp',
 
     },
 
-    // create a filter for showing a set of features based on their object id's
+    // create a filter for showing a set of stories based on their object id's
     createFilterFromFeatures : function(features) {
 
         var filter = null;
@@ -621,7 +612,7 @@ extend: 'Rally.app.TimeboxScopedApp',
         return filter;
     },
 
-    // called when a data value is clicked. Shows a grid of the features that make up that data point.
+    // called when a data value is clicked. Shows a grid of the storeis that make up that data point.
     showItemsTable : function( event ) {
         var that = this;
 
@@ -661,20 +652,31 @@ extend: 'Rally.app.TimeboxScopedApp',
                     shouldShowRowActionsColumn: false,
                     enableRanking: false,
                     columnCfgs: [
-                        'Project','Name','ScheduleState', 'Owner', 'PlanEstimate'
+                        'Project','Name', 'Owner', 'PlanEstimate'
                     ]
                 });
 
                 that.tabPanel = Ext.create('Ext.tab.Panel', {
+                    itemId:'seriesChangeTabs',
                     items: [{
                         title: 'Series',
+                        itemId:'seriesTab',
                         items : [that.itemsTable]
                     }, {
                         title: 'Change',
+                        itemId:'changeTab',
                         items : [that.scopeGrid]
-                    }]
+                    }],
+                    listeners: {
+                        tabchange: function(tab){
+                            that.activeTab = tab.getActiveTab();
+                        },
+                        scope: that
+                    }
                 });
-
+                if(that.activeTab){
+                    that.tabPanel.setActiveTab(that.activeTab);
+                }
                 that.add(that.tabPanel);
             }
         });
@@ -792,7 +794,7 @@ extend: 'Rally.app.TimeboxScopedApp',
                 fieldLabel: 'Query',
                 margin: '0 0 15 50',
                 labelStyle : "width:200px;",
-                afterLabelTpl: 'Query to apply to the list of features.'
+                afterLabelTpl: 'Query to apply to the list of Stories.'
             }
 
         ];
