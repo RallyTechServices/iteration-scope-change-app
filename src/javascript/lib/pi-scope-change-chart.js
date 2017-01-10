@@ -30,8 +30,8 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
                 text: 'Day'
             },
             startOnTick: true,
-            endOnTick: true,
-            min : 0
+            //endOnTick: true,
+            min : 1
         },
         yAxis: [
             {
@@ -54,7 +54,7 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
                 var totaldays = that.series.data.length;
                 // console.log(this);
                 var pointVal = function(series) {
-                    var val = series.data[that.point.x].y;
+                    var val = series.data[that.point.x - 1].y;
                     return !_.isNull(val) ? (val <0 ? val*-1 : val) : 0;
                 };
                 var sumSeries = function(seriesContains) {

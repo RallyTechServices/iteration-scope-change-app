@@ -362,7 +362,7 @@ extend: 'Rally.app.TimeboxScopedApp',
                     value = (key.indexOf("Baseline") > -1) ? value : value * -1;                        
 
                     return {
-                        x : x, y : value, features : d[key]
+                        x : x+1, y : value, features : d[key]
                     };
             })
         };
@@ -616,7 +616,7 @@ extend: 'Rally.app.TimeboxScopedApp',
     showItemsTable : function( event ) {
         var that = this;
 
-        var scopeChangeFeatures = that.getScopeChangeFeatures(event.series.chart,event.x);
+        var scopeChangeFeatures = that.getScopeChangeFeatures(event.series.chart,event.x-1);
         that.scopeGrid = that.addScopeChangeTable(scopeChangeFeatures,event.x);
 
         if (!_.isUndefined(that.tabPanel)) {
