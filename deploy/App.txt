@@ -3,13 +3,13 @@
 <head>
     <title>Iteration Scope Change</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Jan 03 2017 13:58:34 GMT-0800 (PST) -->
+    <!--  Build Date: Mon Jan 09 2017 16:34:47 GMT-0800 (PST) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Jan 03 2017 13:58:34 GMT-0800 (PST)";
+        var APP_BUILD_DATE = "Mon Jan 09 2017 16:34:47 GMT-0800 (PST)";
         var STORY    = "US915";
         var BUILDER  = "arajaraman";
-        var CHECKSUM = 436597264299;
+        var CHECKSUM = 436640183216;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -615,8 +615,8 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
                 text: 'Day'
             },
             startOnTick: true,
-            endOnTick: true,
-            min : 0
+            //endOnTick: true,
+            min : 1
         },
         yAxis: [
             {
@@ -639,7 +639,7 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
                 var totaldays = that.series.data.length;
                 // console.log(this);
                 var pointVal = function(series) {
-                    var val = series.data[that.point.x].y;
+                    var val = series.data[that.point.x - 1].y;
                     return !_.isNull(val) ? (val <0 ? val*-1 : val) : 0;
                 };
                 var sumSeries = function(seriesContains) {
@@ -1183,7 +1183,7 @@ extend: 'Rally.app.TimeboxScopedApp',
                     value = (key.indexOf("Baseline") > -1) ? value : value * -1;                        
 
                     return {
-                        x : x, y : value, features : d[key]
+                        x : x+1, y : value, features : d[key]
                     };
             })
         };
@@ -1437,7 +1437,7 @@ extend: 'Rally.app.TimeboxScopedApp',
     showItemsTable : function( event ) {
         var that = this;
 
-        var scopeChangeFeatures = that.getScopeChangeFeatures(event.series.chart,event.x);
+        var scopeChangeFeatures = that.getScopeChangeFeatures(event.series.chart,event.x-1);
         that.scopeGrid = that.addScopeChangeTable(scopeChangeFeatures,event.x);
 
         if (!_.isUndefined(that.tabPanel)) {
