@@ -221,7 +221,7 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
             return {
                 color : '#888888',
                 width : 1,
-                value : i
+                value : i+1
             }
         });
         this.chartConfig.xAxis.plotLines.push({
