@@ -3,13 +3,13 @@
 <head>
     <title>Iteration Scope Change</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Jan 09 2017 16:34:47 GMT-0800 (PST) -->
+    <!--  Build Date: Thu Jan 12 2017 17:01:12 GMT-0800 (PST) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Jan 09 2017 16:34:47 GMT-0800 (PST)";
+        var APP_BUILD_DATE = "Thu Jan 12 2017 17:01:12 GMT-0800 (PST)";
         var STORY    = "US915";
         var BUILDER  = "arajaraman";
-        var CHECKSUM = 436640183216;
+        var CHECKSUM = 438490990608;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -806,7 +806,7 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
             return {
                 color : '#888888',
                 width : 1,
-                value : i
+                value : i+1
             }
         });
         this.chartConfig.xAxis.plotLines.push({
@@ -1066,6 +1066,12 @@ extend: 'Rally.app.TimeboxScopedApp',
         // set of applicable stories
         bundle.data = _.map(dr,function( day, index ) {
             // filter to just the snapshots for that day
+            //console.log('day before change',index,day);
+            //changing the day's time to check end of the day. 
+            day._d.setHours(23);
+            day._d.setMinutes(59);
+            day._d.setSeconds(59);
+
             var daySnapshots = _.filter(bundle.snapshots,function(s){
                 return day.within(s.range);
             });
@@ -1100,7 +1106,8 @@ extend: 'Rally.app.TimeboxScopedApp',
         // initiatlize the baseline (the set of stories that exist on the baseline)
         bundle.baseline = _.clone(bundle.data[bundle.baselineIndex]);
         // get the set of indexes into release array that represent end dates of iterations
-        bundle.iterationIndices = app.dateIndexes( dr, _.map(bundle.iterations,function(i){ return moment(i.raw.EndDate);}));
+        bundle.iterationIndices = app.dateIndexes( dr, [moment(bundle.release.EndDate)]);
+        //bundle.iterationIndices = app.dateIndexes( dr, _.map( return moment(release.raw.EndDate)));
 
         deferred.resolve(bundle);
         return deferred.promise;

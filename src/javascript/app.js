@@ -245,6 +245,12 @@ extend: 'Rally.app.TimeboxScopedApp',
         // set of applicable stories
         bundle.data = _.map(dr,function( day, index ) {
             // filter to just the snapshots for that day
+            //console.log('day before change',index,day);
+            //changing the day's time to check end of the day. 
+            day._d.setHours(23);
+            day._d.setMinutes(59);
+            day._d.setSeconds(59);
+
             var daySnapshots = _.filter(bundle.snapshots,function(s){
                 return day.within(s.range);
             });
@@ -279,7 +285,8 @@ extend: 'Rally.app.TimeboxScopedApp',
         // initiatlize the baseline (the set of stories that exist on the baseline)
         bundle.baseline = _.clone(bundle.data[bundle.baselineIndex]);
         // get the set of indexes into release array that represent end dates of iterations
-        bundle.iterationIndices = app.dateIndexes( dr, _.map(bundle.iterations,function(i){ return moment(i.raw.EndDate);}));
+        bundle.iterationIndices = app.dateIndexes( dr, [moment(bundle.release.EndDate)]);
+        //bundle.iterationIndices = app.dateIndexes( dr, _.map( return moment(release.raw.EndDate)));
 
         deferred.resolve(bundle);
         return deferred.promise;
