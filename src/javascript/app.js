@@ -272,9 +272,12 @@ extend: 'Rally.app.TimeboxScopedApp',
         var deferred = new Deft.Deferred();
         // construct the date range array (array of dates for the release)
         var dr = app.dateRange(bundle.release);
+        
+        var workspace_timezone = app.getContext().getWorkspace().WorkspaceConfiguration.TimeZone;
+
         // get todays index into the release
         // bundle.todayIndex = _.findIndex(dr, moment(moment().format("M/D/YYYY")));
-        var today = moment();
+        var today = moment().tz("UTC").tz(workspace_timezone);
         bundle.todayIndex = _.findIndex(dr, function(r) {
             return r.year() === today.year() && r.month() === today.month() && r.date() === today.date();
         } );
@@ -285,7 +288,7 @@ extend: 'Rally.app.TimeboxScopedApp',
         // initiatlize the baseline (the set of stories that exist on the baseline)
         bundle.baseline = _.clone(bundle.data[bundle.baselineIndex]);
         // get the set of indexes into release array that represent end dates of iterations
-        bundle.iterationIndices = app.dateIndexes( dr, [moment(bundle.release.EndDate)]);
+        bundle.iterationIndices = app.dateIndexes( dr, [moment(bundle.release.EndDate).tz("UTC").tz(workspace_timezone)]);
         //bundle.iterationIndices = app.dateIndexes( dr, _.map( return moment(release.raw.EndDate)));
 
         deferred.resolve(bundle);
@@ -350,14 +353,14 @@ extend: 'Rally.app.TimeboxScopedApp',
                     // if no stories for category return a null value
                     if (_.isUndefined(d[key]))  {
                         return { 
-                            x : x, y : null, features : null
+                            x : x+1, y : null, features : null
                         };
                     }
 
                     // return null value for future dates
                     if( (bundle.todayIndex >= 0) && (x > bundle.todayIndex+1)) {
                         return { 
-                            x : x, y : null, features : null
+                            x : x+1, y : null, features : null
                         };
                     }
 
@@ -402,6 +405,9 @@ extend: 'Rally.app.TimeboxScopedApp',
                 scope : app
             }
         });
+
+        console.log('_createChart>>>',app.chart);
+
         app.add(app.chart);
         deferred.resolve(bundle);
         return deferred.promise;
@@ -705,7 +711,8 @@ extend: 'Rally.app.TimeboxScopedApp',
 
     dateRange : function(release) {
         var dr = [];
-        var range = moment.range( moment(release.StartDate), moment(release.EndDate) );
+        var workspace_timezone = this.getContext().getWorkspace().WorkspaceConfiguration.TimeZone;
+        var range = moment.range( moment(release.StartDate).tz("UTC").tz(workspace_timezone), moment(release.EndDate).tz("UTC").tz(workspace_timezone) );
         range.by('days',function(m) {
             dr.push( moment(m.format("M/D/YYYY")));
         },false);
