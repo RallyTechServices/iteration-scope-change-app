@@ -283,10 +283,10 @@ extend: 'Rally.app.TimeboxScopedApp',
         } );
         // console.log("today",bundle.todayIndex);
 
-        // get the index of the baseline date
-        bundle.baselineIndex = app.getBaselineIndex(dr,bundle.iterations);
+        // get baseline date from app settings
+        bundle.baselineIndex = app.getBaselineIndex();
         // initiatlize the baseline (the set of stories that exist on the baseline)
-        bundle.baseline = _.clone(bundle.data[bundle.baselineIndex]);
+        bundle.baseline = _.clone(bundle.data[bundle.baselineIndex-1]);
         // get the set of indexes into release array that represent end dates of iterations
         bundle.iterationIndices = app.dateIndexes( dr, [moment(bundle.release.EndDate).tz("UTC").tz(workspace_timezone)]);
         //bundle.iterationIndices = app.dateIndexes( dr, _.map( return moment(release.raw.EndDate)));
@@ -468,7 +468,7 @@ extend: 'Rally.app.TimeboxScopedApp',
 
     // The release is an array of dates; find the index of the date for the baseline. 
     // The baseline date is based on the selected configuration
-    getBaselineIndex : function(range,iterations) {
+    getBaselineIndex : function() {
 
         // if (app.getSetting("baselineType") ==='End of first Day') {
         //     return 0;
@@ -758,7 +758,7 @@ extend: 'Rally.app.TimeboxScopedApp',
 
         var baselineTypeStore = new Ext.data.ArrayStore({
             fields: ['baselineType'],
-            data : [["0"],["1"],["2"],["3"],["4"] /*,['Day Index'],['Specific Date']*/ ]
+            data : [["1"],["2"],["3"],["4"] /*,['Day Index'],['Specific Date']*/ ]
         });  
 
         return [ 

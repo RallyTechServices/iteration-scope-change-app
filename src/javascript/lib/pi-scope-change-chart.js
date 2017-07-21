@@ -28,10 +28,12 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
             title: {
                 enabled : true,
                 text: 'Day'
-            },
-            startOnTick: true,
-            //endOnTick: true,
-            min : 1
+            }
+            // ,
+            // startOnTick: true
+            // ,
+            // //endOnTick: true,
+            // min : 1
         },
         yAxis: [
             {
@@ -42,8 +44,9 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
                     color: '#000000',
                     width: 1,
                     value: 0,
-                    zIndex : 4,
-                    label : {text:"-"}
+                    zIndex : 4
+                    // ,
+                    // label : {text:"-"}
                 }]
             }],
 
@@ -191,6 +194,7 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
             },
             column : {
                 stacking : 'normal',
+                pointStart: 1
             },
         }
     },
