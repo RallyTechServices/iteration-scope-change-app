@@ -3,13 +3,13 @@
 <head>
     <title>Iteration Scope Change</title>
     <!--  (c) 2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Wed Jul 19 2017 18:38:17 GMT-0700 (PDT) -->
+    <!--  Build Date: Thu Jul 20 2017 17:09:24 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Wed Jul 19 2017 18:38:17 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Thu Jul 20 2017 17:09:24 GMT-0700 (PDT)";
         var STORY    = "US915";
         var BUILDER  = "rajan08";
-        var CHECKSUM = 441763703926;
+        var CHECKSUM = 441598128740;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -613,10 +613,12 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
             title: {
                 enabled : true,
                 text: 'Day'
-            },
-            startOnTick: true,
-            //endOnTick: true,
-            min : 1
+            }
+            // ,
+            // startOnTick: true
+            // ,
+            // //endOnTick: true,
+            // min : 1
         },
         yAxis: [
             {
@@ -627,8 +629,9 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
                     color: '#000000',
                     width: 1,
                     value: 0,
-                    zIndex : 4,
-                    label : {text:"-"}
+                    zIndex : 4
+                    // ,
+                    // label : {text:"-"}
                 }]
             }],
 
@@ -776,6 +779,7 @@ Ext.define('Rally.technicalservices.scopeChangeChart',{
             },
             column : {
                 stacking : 'normal',
+                pointStart: 1
             },
         }
     },
@@ -1104,10 +1108,10 @@ extend: 'Rally.app.TimeboxScopedApp',
         } );
         // console.log("today",bundle.todayIndex);
 
-        // get the index of the baseline date
-        bundle.baselineIndex = app.getBaselineIndex(dr,bundle.iterations);
+        // get baseline date from app settings
+        bundle.baselineIndex = app.getBaselineIndex();
         // initiatlize the baseline (the set of stories that exist on the baseline)
-        bundle.baseline = _.clone(bundle.data[bundle.baselineIndex]);
+        bundle.baseline = _.clone(bundle.data[bundle.baselineIndex-1]);
         // get the set of indexes into release array that represent end dates of iterations
         bundle.iterationIndices = app.dateIndexes( dr, [moment(bundle.release.EndDate).tz("UTC").tz(workspace_timezone)]);
         //bundle.iterationIndices = app.dateIndexes( dr, _.map( return moment(release.raw.EndDate)));
@@ -1289,7 +1293,7 @@ extend: 'Rally.app.TimeboxScopedApp',
 
     // The release is an array of dates; find the index of the date for the baseline. 
     // The baseline date is based on the selected configuration
-    getBaselineIndex : function(range,iterations) {
+    getBaselineIndex : function() {
 
         // if (app.getSetting("baselineType") ==='End of first Day') {
         //     return 0;
@@ -1579,7 +1583,7 @@ extend: 'Rally.app.TimeboxScopedApp',
 
         var baselineTypeStore = new Ext.data.ArrayStore({
             fields: ['baselineType'],
-            data : [["0"],["1"],["2"],["3"],["4"] /*,['Day Index'],['Specific Date']*/ ]
+            data : [["1"],["2"],["3"],["4"] /*,['Day Index'],['Specific Date']*/ ]
         });  
 
         return [ 
